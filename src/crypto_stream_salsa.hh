@@ -9,7 +9,7 @@
 #include "buffer.hh"
 #include <bit>
 
-namespace ecstk::crypto::prg::salsa {
+namespace ecstk::crypto::stream::salsa {
 namespace std = ::std;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -247,6 +247,6 @@ private:
     state_vector x_;
 };
 
-} // namespace ecstk::crypto::prg::salsa
+} // namespace ecstk::crypto::stream::salsa
 
 #endif // H_77B54A29755C479BBD07EED5594DA47C

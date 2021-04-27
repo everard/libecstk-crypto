@@ -6,9 +6,9 @@
 #ifndef H_C923DE805B064DF8807E6B692327347B
 #define H_C923DE805B064DF8807E6B692327347B
 
-#include "crypto_prg_salsa.hh"
+#include "crypto_stream_salsa.hh"
 
-namespace ecstk::crypto::prg::xsalsa {
+namespace ecstk::crypto::stream::xsalsa {
 namespace std = ::std;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -115,6 +115,6 @@ private:
     salsa::cipher<N> c0_, c1_;
 };
 
-} // namespace ecstk::crypto::prg::xsalsa
+} // namespace ecstk::crypto::stream::xsalsa
 
 #endif // H_C923DE805B064DF8807E6B692327347B
