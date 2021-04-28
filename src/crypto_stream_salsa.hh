@@ -198,13 +198,6 @@ struct cipher {
         detail::fill(x_, nc, buffer<4>{6, 7, 8, 9});
     }
 
-    template <static_byte_buffer Buffer>
-    auto
-    generate() noexcept -> Buffer {
-        Buffer r;
-        return generate(r), r;
-    }
-
     void
     generate(mut_byte_sequence buf) noexcept {
         if(!buf.empty()) {

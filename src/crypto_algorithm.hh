@@ -6,11 +6,29 @@
 #ifndef H_FBC6BB7618954D979B55C01C63E114A8
 #define H_FBC6BB7618954D979B55C01C63E114A8
 
-#include "buffer.hh"
+#include "crypto_concepts.hh"
 #include <numeric>
 
 namespace ecstk::crypto {
 namespace std = ::std;
+
+////////////////////////////////////////////////////////////////////////////////
+// Buffer generation.
+////////////////////////////////////////////////////////////////////////////////
+
+// Generates and returns a buffer of the given type.
+template <typename Generator, static_byte_buffer Buffer>
+auto
+generate(Generator&& g) noexcept -> Buffer
+    requires(prg::schema<std::remove_reference_t<Generator>> ||
+             stream::cipher<std::remove_reference_t<Generator>>) {
+    Buffer r;
+    return (void)g.generate(mut_byte_sequence{r}), r;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Constant-time algorithms.
+////////////////////////////////////////////////////////////////////////////////
 
 // Checks the equality of the given byte ranges in constant time.
 template <byte_range Range0, byte_range Range1>
@@ -23,8 +41,8 @@ equals(Range0 const& x, Range1 const& y) noexcept -> bool {
                  [](auto x, auto y) { return x ^ y; }) == 0));
 }
 
-// Increments the integer written in little-endian form to the given byte range
-// in constant time.
+// Increments (in constant time) an integer which is written in little-endian
+// form to the given byte range.
 template <byte_range Integer>
 void
 increment(Integer& i) noexcept {

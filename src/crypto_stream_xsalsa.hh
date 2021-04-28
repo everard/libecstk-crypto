@@ -16,7 +16,6 @@ namespace std = ::std;
 ////////////////////////////////////////////////////////////////////////////////
 
 using std::size_t;
-using std::uint32_t;
 using std::uint64_t;
 
 // Tag types.
@@ -70,12 +69,6 @@ struct cipher {
     void
     set_counter(uint64_t c) noexcept {
         c1_.set_counter(c);
-    }
-
-    template <static_byte_buffer Buffer>
-    auto
-    generate() noexcept -> Buffer {
-        return c1_.template generate<Buffer>();
     }
 
     void
