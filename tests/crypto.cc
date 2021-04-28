@@ -4,8 +4,8 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 #include "../src/crypto_algorithm.hh"
-#include "../src/crypto_prg_salsa.hh"
-#include "../src/crypto_prg_xsalsa.hh"
+#include "../src/crypto_stream_salsa.hh"
+#include "../src/crypto_stream_xsalsa.hh"
 #include "utils.hh"
 
 #include <random>
@@ -17,15 +17,18 @@
 
 namespace crypto = ecstk::crypto;
 
-static_assert(crypto::prg::salsa::key::static_size() ==
+static_assert(crypto::stream::salsa::key::static_size() ==
               crypto_stream_salsa20_KEYBYTES);
-static_assert(crypto::prg::salsa::nonce::static_size() ==
+static_assert(crypto::stream::salsa::nonce::static_size() ==
               crypto_stream_salsa20_NONCEBYTES);
 
-static_assert(crypto::prg::xsalsa::key::static_size() ==
+static_assert(crypto::stream::xsalsa::key::static_size() ==
               crypto_stream_xsalsa20_KEYBYTES);
-static_assert(crypto::prg::xsalsa::nonce::static_size() ==
+static_assert(crypto::stream::xsalsa::nonce::static_size() ==
               crypto_stream_xsalsa20_NONCEBYTES);
+
+static_assert(crypto::stream::cipher<crypto::stream::salsa::cipher<20>>);
+static_assert(crypto::stream::cipher<crypto::stream::xsalsa::cipher<20>>);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Additional utility components.
@@ -39,8 +42,7 @@ sodium_randomize(Buffer& b) noexcept {
 
 namespace detail {
 
-static constexpr auto salsa20_block_size =
-    crypto::prg::salsa::state_vector::static_size() * sizeof(uint32_t);
+static constexpr auto salsa20_block_size = crypto::stream::salsa::block_size;
 
 template <ecstk::static_byte_buffer Buffer>
 constexpr auto n_salsa20_blocks =
@@ -199,7 +201,7 @@ main() {
                  "===================\n";
 
     if(true) {
-        using integer_buffer = crypto::prg::xsalsa::nonce;
+        using integer_buffer = crypto::stream::xsalsa::nonce;
 
         auto n = integer_buffer{};
         auto expected_n = integer_buffer{0xE8, 0x03};
@@ -222,7 +224,7 @@ main() {
                  "===================\n";
 
     if(true) {
-        using cipher = crypto::prg::salsa::cipher<20>;
+        using cipher = crypto::stream::salsa::cipher<20>;
         using data_buf = ecstk::buffer<1023>;
 
         std::cout
@@ -349,7 +351,7 @@ main() {
                  "===================\n";
 
     if(true) {
-        using cipher = crypto::prg::salsa::cipher<20>;
+        using cipher = crypto::stream::salsa::cipher<20>;
         using data_buf = ecstk::buffer<1023>;
 
         std::cout
@@ -480,7 +482,7 @@ main() {
                  "===================\n";
 
     if(true) {
-        using cipher = crypto::prg::xsalsa::cipher<20>;
+        using cipher = crypto::stream::xsalsa::cipher<20>;
         using data_buf = ecstk::buffer<1023>;
 
         std::cout
@@ -635,7 +637,7 @@ main() {
                  "===================\n";
 
     if(true) {
-        using cipher = crypto::prg::xsalsa::cipher<20>;
+        using cipher = crypto::stream::xsalsa::cipher<20>;
         using data_buf = ecstk::buffer<1023>;
 
         std::cout
