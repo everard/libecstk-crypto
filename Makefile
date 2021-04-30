@@ -12,12 +12,13 @@ all: tests
 tests: tests-crypto
 
 src/buffer.hh:
-	cp $(INSTALL_INCLUDE_DIR)/buffer.hh src/
+	ln -s $(INSTALL_INCLUDE_DIR)/buffer.hh src/buffer.hh
 
 tests-crypto: src/buffer.hh
 	$(CPP) $(CFLAGS) $(CFLAGS_LIBSODIUM) tests/crypto.cc $(LIBS_LIBSODIUM) -o $(BUILD_DIR)/tests-crypto
 
 clean:
+	rm src/buffer.hh
 	rm -f $(BUILD_DIR)/*
 
 install:

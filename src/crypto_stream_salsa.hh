@@ -49,6 +49,9 @@ static constexpr size_t block_size =
 
 namespace detail {
 
+static constexpr uint32_t str[] = {
+    0x61707865, 0x3320646E, 0x79622D32, 0x6B206574};
+
 template <static_byte_buffer Buffer, static_buffer Map>
 void
 fill(state_vector& x, Buffer buf, Map map) noexcept {
@@ -110,7 +113,9 @@ shuffle(state_vector& x) noexcept {
 // Generation and application of pseudo-random sequence.
 ////////////////////////////////////////////////////////////////////////////////
 
-template <size_t N, typename Fn>
+enum struct mode { cipher, prg };
+
+template <size_t N, mode Mode, typename Fn>
 void
 apply(state_vector& x, mut_byte_sequence buf, Fn fn) noexcept
     requires(std::regular_invocable<Fn, byte_sequence, mut_byte_sequence>) {
@@ -132,6 +137,12 @@ apply(state_vector& x, mut_byte_sequence buf, Fn fn) noexcept
         }
 
         x[9] += uint32_t{++x[8] == 0};
+
+        if constexpr(Mode == mode::prg) {
+            if((x[8] | x[9]) == 0) [[unlikely]] {
+                x[7] += uint32_t{++x[6] == 0};
+            }
+        }
     };
 
     state_vector y;
@@ -164,13 +175,10 @@ struct cipher {
     using nonce = salsa::nonce;
 
     cipher(ref<key> k, ref<nonce> n, uint64_t c = 0) noexcept : x_{} {
-        static uint32_t const str[] = {
-            0x61707865, 0x3320646E, 0x79622D32, 0x6B206574};
-
-        x_[0] = str[0];
-        x_[5] = str[1];
-        x_[10] = str[2];
-        x_[15] = str[3];
+        x_[0] = detail::str[0];
+        x_[5] = detail::str[1];
+        x_[10] = detail::str[2];
+        x_[15] = detail::str[3];
 
         set_key(k);
         set_nonce(n, c);
@@ -201,7 +209,7 @@ struct cipher {
     void
     generate(mut_byte_sequence buf) noexcept {
         if(!buf.empty()) {
-            apply<N>(
+            apply<N, mode::cipher>(
                 x_, buf, [](byte_sequence src, mut_byte_sequence dst) noexcept {
                     std::copy_n(src.data(), dst.size(), dst.data());
                 });
@@ -211,7 +219,7 @@ struct cipher {
     void
     xor_buf(mut_byte_sequence buf) noexcept {
         if(!buf.empty()) {
-            apply<N>(
+            apply<N, mode::cipher>(
                 x_, buf, [](byte_sequence src, mut_byte_sequence dst) noexcept {
                     for(auto i = src.data(); auto& x : dst) {
                         x ^= *(i++);
@@ -234,6 +242,37 @@ struct cipher {
     counter() const noexcept -> uint64_t {
         return ((static_cast<uint64_t>(x_[8])) |
                 (static_cast<uint64_t>(x_[9]) << 32));
+    }
+
+private:
+    state_vector x_;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// PRG definition. Size of the pseudo-random sequence is at least 2^128 bytes.
+////////////////////////////////////////////////////////////////////////////////
+
+template <size_t N>
+struct prg {
+    using key = salsa::key;
+
+    prg(ref<key> k) noexcept : x_{} {
+        x_[0] = detail::str[0];
+        x_[5] = detail::str[1];
+        x_[10] = detail::str[2];
+        x_[15] = detail::str[3];
+
+        detail::fill(x_, k, buffer<8>{1, 2, 3, 4, 11, 12, 13, 14});
+    }
+
+    void
+    generate(mut_byte_sequence buf) noexcept {
+        if(!buf.empty()) {
+            apply<N, mode::prg>(
+                x_, buf, [](byte_sequence src, mut_byte_sequence dst) noexcept {
+                    std::copy_n(src.data(), dst.size(), dst.data());
+                });
+        }
     }
 
 private:

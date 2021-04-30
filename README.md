@@ -1,5 +1,5 @@
 # DESCRIPTION
-_E_ ssential _C_ omponent _ST_ ac _K_ - libecstk - is a small modular C++20 library. Crypto part features safe-to-use cryptographic primitives.
+Essential Component Stack - libecstk - is a small modular C++20 library. Crypto part features safe-to-use cryptographic primitives.
 
 # INSTALLATION
 Development headers can be copied to the `/usr/local/include/ecstk` directory using the following command.

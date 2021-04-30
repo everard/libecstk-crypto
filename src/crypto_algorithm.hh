@@ -49,6 +49,7 @@ increment(Integer& i) noexcept {
     using carry =
         std::conditional_t<(std::numeric_limits<unsigned>::digits > CHAR_BIT),
                            unsigned, unsigned long>;
+
     static_assert(std::numeric_limits<carry>::digits > CHAR_BIT);
 
     for(auto c = carry{1}; auto& x : i) {
