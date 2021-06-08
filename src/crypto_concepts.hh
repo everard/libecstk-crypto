@@ -1,4 +1,4 @@
-// Copyright(c) 2021 Nezametdinov E. Ildus.
+// Copyright Nezametdinov E. Ildus 2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
@@ -7,19 +7,24 @@
 #define H_7EF44563B1C6470B8FFFEFB77C5D88DF
 
 #include "buffer.hh"
+
+#include <numeric>
 #include <optional>
 
 namespace ecstk::crypto {
 namespace std = ::std;
 
 ////////////////////////////////////////////////////////////////////////////////
+// Side of operation.
+////////////////////////////////////////////////////////////////////////////////
+
+enum struct side { client, server };
+
+////////////////////////////////////////////////////////////////////////////////
 // Key exchange schema concept.
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace kx {
-
-// Side of the key exchange.
-enum struct side { client, server };
 
 // clang-format off
 template <typename T>
@@ -47,6 +52,28 @@ concept schema =
 // clang-format on
 
 } // namespace kx
+
+////////////////////////////////////////////////////////////////////////////////
+// MAC schema concept.
+////////////////////////////////////////////////////////////////////////////////
+
+namespace mac {
+
+// clang-format off
+template <typename T>
+concept schema =
+    static_byte_buffer<typename T::key> &&
+    static_byte_buffer<typename T::tag> &&
+    requires(ref<typename T::key> k, byte_sequence msg) {
+        { T::sign(k, msg) } -> std::same_as<typename T::tag>;
+    } &&
+    requires(ref<typename T::key> k, ref<typename T::tag> t,
+             byte_sequence msg) {
+        { T::verify(k, t, msg) } -> std::same_as<bool>;
+    };
+// clang-format on
+
+} // namespace mac
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public key authentication schema concept.
